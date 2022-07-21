@@ -118,6 +118,7 @@ const config = {
     COMPRESS: !process.env.NOCOMPRESS,
     MOBILE_DEVICE: process.env.MOBILE_DEVICE || 'iPhone 8 Plus',
     ARCHIVE_PATH: process.env.ARCHIVE_PATH || path.join(cwd, 'archive'),
+    DISABLE_CHROME_SANDBOX: process.env.DISABLE_CHROME_SANDBOX || false,
 
     sites: {
         'mega.io': {
@@ -223,7 +224,14 @@ async function getSiteVersion(page) {
 async function launch(url, selector, device) {
     'use strict';
 
-    const browser = await puppeteer.launch();
+    var chrome_args = [];
+    if (config.DISABLE_CHROME_SANDBOX){
+      chrome_args = ['--no-sandbox'];
+    }
+
+    const browser = await puppeteer.launch({
+       args: chrome_args,
+    }).catch(console.error);
     const page = await browser.newPage();
 
     page
@@ -291,7 +299,6 @@ async function archive() {
         const opt = config.sites[domain];
         const url = `https://${domain}/${opt.path || ''}#${opt.hash || ''}`;
         const selector = opt.waitSelector || '.startpage.register';
-
         const {page, close} = await launch(url, selector);
         const {website: version, timestamp, commit} = await getSiteVersion(page);
 
