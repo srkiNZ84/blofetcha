@@ -299,6 +299,7 @@ async function archive() {
         const opt = config.sites[domain];
         const url = `https://${domain}/${opt.path || ''}#${opt.hash || ''}`;
         const selector = opt.waitSelector || '.startpage.register';
+
         const {page, close} = await launch(url, selector);
         const {website: version, timestamp, commit} = await getSiteVersion(page);
 
